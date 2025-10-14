@@ -429,9 +429,9 @@ export function ColorPalette({
                                   pendingInsertIndexRef.current = index + 1;
                                   onAddColor(index + 1);
                                 }}
-                                className="h-10 w-10 rounded-full bg-black/60 backdrop-blur-md text-white active:bg-black/80 transition-all duration-200 shadow-lg opacity-100 scale-100"
+                                className="h-8 w-8 rounded-full bg-black/60 backdrop-blur-md text-white active:bg-black/80 transition-all duration-200 shadow-lg opacity-100 scale-100"
                               >
-                                <Plus className="h-4 w-4" />
+                                <Plus className="h-3.5 w-3.5" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
