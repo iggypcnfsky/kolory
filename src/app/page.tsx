@@ -392,6 +392,18 @@ export default function Home() {
           <HarmonySelector currentMode={harmonyMode} onChange={changeHarmonyMode} />
         </div>
 
+        {/* Bottom Left - Credit - Desktop Only */}
+        <div className="fixed bottom-6 left-6 z-10 hidden md:block">
+          <a
+            href="https://iggy.love"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-white/40 hover:text-white/70 transition-colors backdrop-blur-sm px-2 py-1 rounded"
+          >
+            by Iggy Love
+          </a>
+        </div>
+
         {/* Mobile Bottom Left - Text Mode Only */}
         <div className="fixed bottom-4 left-4 z-20 md:hidden">
           {/* Text Mode Button/Display */}

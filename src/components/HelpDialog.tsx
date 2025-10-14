@@ -72,6 +72,21 @@ export function HelpDialog({ open, onOpenChange }: HelpDialogProps) {
               ))}
             </ul>
           </div>
+
+          {/* Credit */}
+          <div className="pt-4 border-t text-center">
+            <p className="text-xs text-muted-foreground">
+              Designed by{' '}
+              <a
+                href="https://iggy.love"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium hover:underline transition-colors"
+              >
+                Iggy Love
+              </a>
+            </p>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
