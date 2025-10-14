@@ -22,7 +22,7 @@ import { Color } from '@/hooks/usePalette';
 import { ColorColumn } from './ColorColumn';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, MoreVertical } from 'lucide-react';
 
 interface ColorPaletteProps {
   colors: Color[];
@@ -33,6 +33,8 @@ interface ColorPaletteProps {
   onAddColor: (insertIndex?: number) => void;
   canAddMore: boolean;
   canRemove: boolean;
+  randomWidthMode: boolean;
+  onShuffleWidths: () => void;
 }
 
 function SortableColorColumn({
@@ -48,6 +50,7 @@ function SortableColorColumn({
   onDelete?: () => void;
   canRemove: boolean;
 }) {
+  const [isHovered, setIsHovered] = React.useState(false);
   const {
     attributes,
     listeners,
@@ -66,9 +69,9 @@ function SortableColorColumn({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex-1 h-full"
-      {...attributes}
-      {...listeners}
+      className="flex-1 h-full relative"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <ColorColumn
         color={color}
@@ -77,6 +80,25 @@ function SortableColorColumn({
         onDelete={canRemove ? onDelete : undefined}
         isDragging={isDragging}
       />
+      {/* Desktop Drag Handle - Below Controls */}
+      <div
+        {...attributes}
+        {...listeners}
+        className={`hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 items-center justify-center cursor-grab active:cursor-grabbing transition-all duration-200 z-20 ${
+          isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+        }`}
+        style={{ 
+          marginTop: '180px',
+        }}
+      >
+        <MoreVertical 
+          className="h-7 w-7" 
+          style={{ 
+            color: color.hsl.l > 50 ? '#000000' : '#ffffff',
+            strokeWidth: 2.5
+          }}
+        />
+      </div>
     </div>
   );
 }
@@ -90,6 +112,8 @@ export function ColorPalette({
   onAddColor,
   canAddMore,
   canRemove,
+  randomWidthMode,
+  onShuffleWidths,
 }: ColorPaletteProps) {
   const [hoveredDivider, setHoveredDivider] = useState<number | null>(null);
   const [isResizing, setIsResizing] = useState(false);
@@ -99,6 +123,25 @@ export function ColorPalette({
   const pendingInsertIndexRef = React.useRef<number | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [columnWidths, setColumnWidths] = useState<number[]>([]);
+  const prevColorsRef = React.useRef<Color[]>([]);
+
+  // Helper to generate random widths that sum to 100
+  const generateRandomWidths = React.useCallback((count: number): number[] => {
+    const minWidth = 10;
+    const maxWidth = 40;
+    const widths: number[] = [];
+    let remaining = 100;
+    
+    for (let i = 0; i < count - 1; i++) {
+      const maxPossible = Math.min(maxWidth, remaining - minWidth * (count - i - 1));
+      const width = Math.random() * (maxPossible - minWidth) + minWidth;
+      widths.push(width);
+      remaining -= width;
+    }
+    widths.push(remaining);
+    
+    return widths;
+  }, []);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -109,6 +152,35 @@ export function ColorPalette({
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  // Handle random width mode toggle
+  React.useEffect(() => {
+    if (randomWidthMode && columnWidths.length === colors.length) {
+      // Toggled on: generate random widths
+      const randomWidths = generateRandomWidths(colors.length);
+      setColumnWidths(randomWidths);
+      initialWidthsRef.current = randomWidths;
+    } else if (!randomWidthMode && columnWidths.length === colors.length) {
+      // Toggled off: reset to equal widths
+      const equalWidths = colors.map(() => 100 / colors.length);
+      setColumnWidths(equalWidths);
+      initialWidthsRef.current = equalWidths;
+    }
+  }, [randomWidthMode]);
+
+  // Detect color shuffle and apply random widths if in random mode
+  React.useEffect(() => {
+    const colorsChanged = prevColorsRef.current.length === colors.length &&
+      prevColorsRef.current.some((c, i) => c.hex !== colors[i].hex);
+    
+    if (colorsChanged && randomWidthMode && columnWidths.length === colors.length) {
+      const randomWidths = generateRandomWidths(colors.length);
+      setColumnWidths(randomWidths);
+      initialWidthsRef.current = randomWidths;
+    }
+    
+    prevColorsRef.current = colors;
+  }, [colors, randomWidthMode, columnWidths.length, generateRandomWidths]);
 
   // Reconcile widths when color count changes, support splitting at pending insert index
   React.useEffect(() => {
@@ -134,10 +206,16 @@ export function ColorPalette({
       return;
     }
     if (columnWidths.length !== colors.length) {
-      setColumnWidths([]);
-      initialWidthsRef.current = [];
+      if (randomWidthMode) {
+        const randomWidths = generateRandomWidths(colors.length);
+        setColumnWidths(randomWidths);
+        initialWidthsRef.current = randomWidths;
+      } else {
+        setColumnWidths([]);
+        initialWidthsRef.current = [];
+      }
     }
-  }, [colors.length]);
+  }, [colors.length, randomWidthMode, columnWidths.length, generateRandomWidths]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;

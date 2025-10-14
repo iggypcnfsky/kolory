@@ -27,11 +27,13 @@ import { getNextHarmonyMode, getPreviousHarmonyMode, getHarmonyName } from '@/li
 function TopBarButton({ 
   icon, 
   onClick, 
-  tooltip 
+  tooltip,
+  active = false,
 }: { 
   icon: React.ReactNode; 
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   tooltip: string;
+  active?: boolean;
 }) {
   return (
     <Tooltip>
@@ -40,7 +42,11 @@ function TopBarButton({
           variant="ghost"
           size="icon"
           onClick={onClick}
-          className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-md text-white hover:bg-black/80 transition-all duration-200 shadow-lg"
+          className={`w-12 h-12 rounded-full backdrop-blur-md transition-all duration-200 shadow-lg ${
+            active 
+              ? 'bg-white/90 text-black hover:bg-white' 
+              : 'bg-black/60 text-white hover:bg-black/80'
+          }`}
         >
           {icon}
         </Button>
@@ -78,6 +84,7 @@ export default function Home() {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [paletteName, setPaletteName] = useState('');
   const [mobileHarmonyOpen, setMobileHarmonyOpen] = useState(false);
+  const [randomWidthMode, setRandomWidthMode] = useState(false);
 
   // Helper to blur button after click
   const handleButtonClick = (callback: () => void) => (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -119,6 +126,11 @@ export default function Home() {
     toast.info(`Harmony: ${getHarmonyName(prevMode)}`);
   };
 
+  const handleToggleRandomWidth = () => {
+    setRandomWidthMode(!randomWidthMode);
+    toast.info(randomWidthMode ? 'Equal widths' : 'Random widths');
+  };
+
   useKeyboard({
     onShuffle: shuffleColors,
     onCopyPalette: handleCopyPalette,
@@ -142,6 +154,8 @@ export default function Home() {
           onAddColor={addColor}
           canAddMore={canAddMore}
           canRemove={canRemove}
+          randomWidthMode={randomWidthMode}
+          onShuffleWidths={shuffleColors}
         />
 
         {/* Top Center Controls - Desktop Only */}
@@ -152,6 +166,14 @@ export default function Home() {
               icon={<Shuffle className="h-5 w-5" />}
               onClick={handleButtonClick(shuffleColors)}
               tooltip="Generate new colors (Space)"
+            />
+
+            {/* Random Width Toggle */}
+            <TopBarButton
+              icon={<Percent className="h-5 w-5" />}
+              onClick={handleButtonClick(handleToggleRandomWidth)}
+              tooltip={randomWidthMode ? "Random widths enabled" : "Random widths disabled"}
+              active={randomWidthMode}
             />
 
             {/* Save Palette */}
