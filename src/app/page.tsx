@@ -392,38 +392,20 @@ export default function Home() {
           <HarmonySelector currentMode={harmonyMode} onChange={changeHarmonyMode} />
         </div>
 
-        {/* Mobile Top Right - Share Button */}
-        <div className="fixed top-4 right-4 z-20 md:hidden">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon"
-                onClick={handleButtonClick(handleSharePalette)}
-                className="h-8 w-8 rounded-full bg-black/60 backdrop-blur-md text-white active:bg-black/80 shadow-lg"
-              >
-                <Share2 className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="left">
-              <p>Copy palette as text</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
         {/* Mobile Bottom Left - Text Mode Only */}
         <div className="fixed bottom-4 left-4 z-20 md:hidden">
           {/* Text Mode Button/Display */}
           {randomFontMode ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-full bg-white text-black shadow-lg backdrop-blur-md">
+                <div className="flex items-center gap-2 px-3 h-10 rounded-full bg-white text-black shadow-lg backdrop-blur-md">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={handleButtonClick(handleToggleRandomFont)}
-                    className="h-6 w-6 hover:bg-black/10 flex-shrink-0"
+                    className="h-7 w-7 hover:bg-black/10 flex-shrink-0"
                   >
-                    <Type className="h-3 w-3" />
+                    <Type className="h-4 w-4" />
                   </Button>
                   <span 
                     className="text-xs font-medium whitespace-nowrap max-w-[100px] overflow-hidden text-ellipsis" 
@@ -435,9 +417,9 @@ export default function Home() {
                     variant="ghost"
                     size="icon"
                     onClick={handleButtonClick(handleToggleFontLock)}
-                    className="h-6 w-6 hover:bg-black/10 flex-shrink-0"
+                    className="h-7 w-7 hover:bg-black/10 flex-shrink-0"
                   >
-                    {fontLocked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
+                    {fontLocked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
                   </Button>
                   <Button
                     variant="ghost"
@@ -449,9 +431,9 @@ export default function Home() {
                       window.open(fontUrl, '_blank');
                       e.currentTarget.blur();
                     }}
-                    className="h-6 w-6 hover:bg-black/10 flex-shrink-0"
+                    className="h-7 w-7 hover:bg-black/10 flex-shrink-0"
                   >
-                    <ExternalLink className="h-3 w-3" />
+                    <ExternalLink className="h-4 w-4" />
                   </Button>
                 </div>
               </TooltipTrigger>
@@ -465,9 +447,9 @@ export default function Home() {
                 <Button
                   size="icon"
                   onClick={handleButtonClick(handleToggleRandomFont)}
-                  className="h-8 w-8 rounded-full bg-black/60 backdrop-blur-md text-white active:bg-black/80 shadow-lg"
+                  className="h-10 w-10 rounded-full bg-black/60 backdrop-blur-md text-white active:bg-black/80 shadow-lg"
                 >
-                  <Type className="h-4 w-4" />
+                  <Type className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">
@@ -481,7 +463,7 @@ export default function Home() {
         <div className="fixed bottom-4 right-4 z-20 md:hidden">
           {/* Harmony mode buttons panel - shown when open - positioned higher to avoid overlap */}
           <div 
-            className={`absolute bottom-[100px] right-0 flex flex-col gap-1.5 transition-all duration-300 origin-bottom-right ${
+            className={`absolute bottom-[120px] right-0 flex flex-col gap-2 transition-all duration-300 origin-bottom-right ${
               mobileHarmonyOpen 
                 ? 'opacity-100 scale-100 translate-y-0' 
                 : 'opacity-0 scale-75 translate-y-4 pointer-events-none'
@@ -499,13 +481,13 @@ export default function Home() {
                         changeHarmonyMode(mode);
                         e.currentTarget.blur();
                       }}
-                      className={`h-8 w-8 rounded-full transition-all duration-200 shadow-lg ${
+                      className={`h-10 w-10 rounded-full transition-all duration-200 shadow-lg ${
                         isActive 
                           ? 'bg-white text-black' 
                           : 'bg-black/60 backdrop-blur-md text-white active:bg-black/80'
                       }`}
                     >
-                      <div className="scale-75">
+                      <div className="scale-90">
                         {harmonyIcons[mode]}
                       </div>
                     </Button>
@@ -519,20 +501,20 @@ export default function Home() {
           </div>
 
           {/* Right side buttons */}
-          <div className="flex items-end gap-1.5">
+          <div className="flex items-end gap-2">
             {/* Percentage Toggle Button - Left */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   size="icon"
                   onClick={handleButtonClick(handleToggleRandomWidth)}
-                  className={`h-8 w-8 rounded-full shadow-lg transition-all duration-200 ${
+                  className={`h-10 w-10 rounded-full shadow-lg transition-all duration-200 ${
                     randomWidthMode
                       ? 'bg-white text-black'
                       : 'bg-black/60 backdrop-blur-md text-white active:bg-black/80'
                   }`}
                 >
-                  <Percent className="h-4 w-4" />
+                  <Percent className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="left">
@@ -541,16 +523,16 @@ export default function Home() {
             </Tooltip>
 
             {/* Right column: Harmony stacked above Generate */}
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               {/* Harmony Toggle Button */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     size="icon"
                     onClick={() => setMobileHarmonyOpen(!mobileHarmonyOpen)}
-                    className="h-8 w-8 rounded-full bg-black/60 backdrop-blur-md text-white active:bg-black/80 shadow-lg"
+                    className="h-10 w-10 rounded-full bg-black/60 backdrop-blur-md text-white active:bg-black/80 shadow-lg"
                   >
-                    {mobileHarmonyOpen ? <X className="h-4 w-4" /> : <Palette className="h-4 w-4" />}
+                    {mobileHarmonyOpen ? <X className="h-5 w-5" /> : <Palette className="h-5 w-5" />}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="left">
@@ -564,9 +546,9 @@ export default function Home() {
                   <Button
                     size="icon"
                     onClick={handleButtonClick(shuffleColors)}
-                    className="h-8 w-8 rounded-full bg-black/60 backdrop-blur-md text-white active:bg-black/80 shadow-lg"
+                    className="h-10 w-10 rounded-full bg-black/60 backdrop-blur-md text-white active:bg-black/80 shadow-lg"
                   >
-                    <Shuffle className="h-4 w-4" />
+                    <Shuffle className="h-5 w-5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="left">
