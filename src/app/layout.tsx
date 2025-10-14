@@ -11,6 +11,12 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "Kolory - Color Palette Generator",
   description: "Generate beautiful color palettes with harmony modes, lock colors, and export in multiple formats",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({
@@ -19,9 +25,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="overflow-hidden">
       <body
-        className={`${dmSans.variable} antialiased`}
+        className={`${dmSans.variable} antialiased overflow-hidden`}
       >
         {children}
       </body>

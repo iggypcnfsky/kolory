@@ -16,6 +16,7 @@ interface ColorColumnProps {
   onDelete?: () => void;
   style?: React.CSSProperties;
   isDragging?: boolean;
+  hexFont?: string;
 }
 
 export function ColorColumn({
@@ -25,6 +26,7 @@ export function ColorColumn({
   onDelete,
   style,
   isDragging,
+  hexFont = 'DM Sans',
 }: ColorColumnProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -55,9 +57,9 @@ export function ColorColumn({
     }
   };
 
-  const handleSliderDrag = (e: React.MouseEvent, type: 'h' | 's' | 'l', max: number) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const clickY = e.clientY - rect.top;
+  const handleSliderInteraction = (clientY: number, sliderElement: HTMLElement, type: 'h' | 's' | 'l', max: number) => {
+    const rect = sliderElement.getBoundingClientRect();
+    const clickY = clientY - rect.top;
     const percentage = 1 - (clickY / rect.height);
     const newValue = Math.round(Math.max(0, Math.min(max, percentage * max)));
     
@@ -71,6 +73,10 @@ export function ColorColumn({
       setL(newValue);
       onUpdateColor({ h, s, l: newValue });
     }
+  };
+
+  const handleSliderDrag = (e: React.MouseEvent, type: 'h' | 's' | 'l', max: number) => {
+    handleSliderInteraction(e.clientY, e.currentTarget as HTMLElement, type, max);
   };
 
   useEffect(() => {
@@ -198,7 +204,7 @@ export function ColorColumn({
                 handleCopyHex();
               }}
               className="text-3xl font-semibold tracking-tight hover:scale-105 transition-transform cursor-pointer flex items-center gap-2"
-              style={{ color: textColor }}
+              style={{ color: textColor, fontFamily: hexFont }}
             >
               {color.hex.toUpperCase()}
               {copied && <Check className="h-6 w-6" />}
@@ -225,12 +231,13 @@ export function ColorColumn({
               style={{ borderColor: `${textColor}e6` }}
               onMouseDown={(e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 setIsDraggingSlider('h');
                 handleSliderDrag(e, 'h', 360);
               }}
               onMouseEnter={(e) => {
+                e.stopPropagation();
                 if (e.buttons === 1) {
-                  e.stopPropagation();
                   setIsDraggingSlider('h');
                   handleSliderDrag(e, 'h', 360);
                 }
@@ -302,12 +309,13 @@ export function ColorColumn({
               style={{ borderColor: `${textColor}e6` }}
               onMouseDown={(e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 setIsDraggingSlider('s');
                 handleSliderDrag(e, 's', 100);
               }}
               onMouseEnter={(e) => {
+                e.stopPropagation();
                 if (e.buttons === 1) {
-                  e.stopPropagation();
                   setIsDraggingSlider('s');
                   handleSliderDrag(e, 's', 100);
                 }
@@ -379,12 +387,13 @@ export function ColorColumn({
               style={{ borderColor: `${textColor}e6` }}
               onMouseDown={(e) => {
                 e.stopPropagation();
+                e.preventDefault();
                 setIsDraggingSlider('l');
                 handleSliderDrag(e, 'l', 100);
               }}
               onMouseEnter={(e) => {
+                e.stopPropagation();
                 if (e.buttons === 1) {
-                  e.stopPropagation();
                   setIsDraggingSlider('l');
                   handleSliderDrag(e, 'l', 100);
                 }
@@ -453,71 +462,8 @@ export function ColorColumn({
 
       {/* Mobile Layout */}
       <div className="md:hidden flex flex-col h-full">
-        {/* Top Center - Hex Code and Controls */}
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3" onClick={(e) => e.stopPropagation()}>
-          {/* Lock and Delete Icons */}
-          <div className="flex items-center gap-2">
-            {/* Lock Button */}
-            <div
-              className={`transition-opacity duration-200 ${
-                isHovered || color.locked ? 'opacity-100' : 'opacity-0'
-              }`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      onToggleLock();
-                    }}
-                    className="hover:bg-white/20 h-9 w-9"
-                    style={{ color: textColor }}
-                  >
-                    {color.locked ? <Lock className="h-5 w-5" /> : <Unlock className="h-5 w-5" />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{color.locked ? 'Unlock' : 'Lock'} color</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-
-            {/* Delete Button */}
-            {onDelete && (
-              <div
-                className={`transition-opacity duration-200 ${
-                  isHovered ? 'opacity-100' : 'opacity-0'
-                }`}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        onDelete();
-                      }}
-                      className="hover:bg-white/20 h-9 w-9"
-                      style={{ color: textColor }}
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Delete color</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            )}
-          </div>
-
+        {/* Top Left - Hex Code with Lock and Delete Icons - Always Visible */}
+        <div className="absolute top-4 left-4 flex items-center gap-2 opacity-100" onClick={(e) => e.stopPropagation()}>
           {/* Hex Code */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -527,43 +473,99 @@ export function ColorColumn({
                   e.stopPropagation();
                   handleCopyHex();
                 }}
-                className="text-3xl font-semibold tracking-tight hover:scale-105 transition-transform cursor-pointer flex items-center gap-2"
-                style={{ color: textColor }}
+                className="text-base font-semibold tracking-tight active:scale-95 transition-transform cursor-pointer flex items-center gap-1"
+                style={{ color: textColor, fontFamily: hexFont }}
               >
                 {color.hex.toUpperCase()}
-                {copied && <Check className="h-6 w-6" />}
+                {copied && <Check className="h-3 w-3" />}
               </button>
             </TooltipTrigger>
             <TooltipContent>
               <p>Click to copy</p>
             </TooltipContent>
           </Tooltip>
+
+          {/* Lock Button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onToggleLock();
+                }}
+                className="flex items-center justify-center w-7 h-7 rounded-full transition-colors duration-200 active:scale-95"
+                style={{ 
+                  color: textColor,
+                  backgroundColor: `${textColor}20`
+                }}
+              >
+                {color.locked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{color.locked ? 'Unlock' : 'Lock'} color</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Delete Button */}
+          {onDelete && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                  className="flex items-center justify-center w-7 h-7 rounded-full transition-colors duration-200 active:scale-95"
+                  style={{ 
+                    color: textColor,
+                    backgroundColor: `${textColor}20`
+                  }}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Delete color</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
 
-        {/* Right Side - Vertical Sliders */}
+        {/* Bottom Center - Horizontal Sliders - Hidden on Mobile */}
         <div
-          className={`absolute right-4 top-1/2 -translate-y-1/2 transition-all duration-200 ${
-            isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
-          }`}
+          className="hidden"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex flex-col gap-3">
             {/* Hue Slider */}
-            <div className="relative flex items-center gap-2">
+            <div className="relative flex flex-col items-center gap-1">
               <span className="text-xs font-medium" style={{ color: textColor }}>H</span>
               <div 
                 data-slider="h"
-                className="relative w-[51px] h-[120px] rounded-full border-2 cursor-pointer overflow-hidden"
+                className="relative w-[120px] h-[32px] rounded-full border-2 cursor-pointer overflow-hidden"
                 style={{ borderColor: `${textColor}e6` }}
                 onMouseDown={(e) => {
                   e.stopPropagation();
                   setIsDraggingSlider('h');
-                  handleSliderDrag(e, 'h', 360);
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const clickX = e.clientX - rect.left;
+                  const percentage = clickX / rect.width;
+                  const newH = Math.round(Math.max(0, Math.min(360, percentage * 360)));
+                  setH(newH);
+                  onUpdateColor({ h: newH, s, l });
                 }}
                 onMouseMove={(e) => {
                   if (e.buttons === 1) {
                     e.stopPropagation();
-                    handleSliderDrag(e, 'h', 360);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const percentage = clickX / rect.width;
+                    const newH = Math.round(Math.max(0, Math.min(360, percentage * 360)));
+                    setH(newH);
+                    onUpdateColor({ h: newH, s, l });
                   }
                 }}
                 onTouchStart={(e) => {
@@ -571,8 +573,8 @@ export function ColorColumn({
                   setIsDraggingSlider('h');
                   const touch = e.touches[0];
                   const rect = e.currentTarget.getBoundingClientRect();
-                  const clickY = touch.clientY - rect.top;
-                  const percentage = 1 - (clickY / rect.height);
+                  const clickX = touch.clientX - rect.left;
+                  const percentage = clickX / rect.width;
                   const newH = Math.round(Math.max(0, Math.min(360, percentage * 360)));
                   setH(newH);
                   onUpdateColor({ h: newH, s, l });
@@ -581,8 +583,8 @@ export function ColorColumn({
                   e.stopPropagation();
                   const touch = e.touches[0];
                   const rect = e.currentTarget.getBoundingClientRect();
-                  const clickY = touch.clientY - rect.top;
-                  const percentage = 1 - (clickY / rect.height);
+                  const clickX = touch.clientX - rect.left;
+                  const percentage = clickX / rect.width;
                   const newH = Math.round(Math.max(0, Math.min(360, percentage * 360)));
                   setH(newH);
                   onUpdateColor({ h: newH, s, l });
@@ -590,9 +592,9 @@ export function ColorColumn({
                 onClick={(e) => e.stopPropagation()}
               >
                 <div 
-                  className="absolute bottom-0 left-0 right-0 transition-all duration-150"
+                  className="absolute left-0 top-0 bottom-0 transition-all duration-150"
                   style={{ 
-                    height: `${(h / 360) * 100}%`,
+                    width: `${(h / 360) * 100}%`,
                     backgroundColor: `${textColor}0d`
                   }}
                 />
@@ -600,21 +602,31 @@ export function ColorColumn({
             </div>
 
             {/* Saturation Slider */}
-            <div className="relative flex items-center gap-2">
+            <div className="relative flex flex-col items-center gap-1">
               <span className="text-xs font-medium" style={{ color: textColor }}>S</span>
               <div 
                 data-slider="s"
-                className="relative w-[51px] h-[120px] rounded-full border-2 cursor-pointer overflow-hidden"
+                className="relative w-[120px] h-[32px] rounded-full border-2 cursor-pointer overflow-hidden"
                 style={{ borderColor: `${textColor}e6` }}
                 onMouseDown={(e) => {
                   e.stopPropagation();
                   setIsDraggingSlider('s');
-                  handleSliderDrag(e, 's', 100);
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const clickX = e.clientX - rect.left;
+                  const percentage = clickX / rect.width;
+                  const newS = Math.round(Math.max(0, Math.min(100, percentage * 100)));
+                  setS(newS);
+                  onUpdateColor({ h, s: newS, l });
                 }}
                 onMouseMove={(e) => {
                   if (e.buttons === 1) {
                     e.stopPropagation();
-                    handleSliderDrag(e, 's', 100);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const percentage = clickX / rect.width;
+                    const newS = Math.round(Math.max(0, Math.min(100, percentage * 100)));
+                    setS(newS);
+                    onUpdateColor({ h, s: newS, l });
                   }
                 }}
                 onTouchStart={(e) => {
@@ -622,8 +634,8 @@ export function ColorColumn({
                   setIsDraggingSlider('s');
                   const touch = e.touches[0];
                   const rect = e.currentTarget.getBoundingClientRect();
-                  const clickY = touch.clientY - rect.top;
-                  const percentage = 1 - (clickY / rect.height);
+                  const clickX = touch.clientX - rect.left;
+                  const percentage = clickX / rect.width;
                   const newS = Math.round(Math.max(0, Math.min(100, percentage * 100)));
                   setS(newS);
                   onUpdateColor({ h, s: newS, l });
@@ -632,8 +644,8 @@ export function ColorColumn({
                   e.stopPropagation();
                   const touch = e.touches[0];
                   const rect = e.currentTarget.getBoundingClientRect();
-                  const clickY = touch.clientY - rect.top;
-                  const percentage = 1 - (clickY / rect.height);
+                  const clickX = touch.clientX - rect.left;
+                  const percentage = clickX / rect.width;
                   const newS = Math.round(Math.max(0, Math.min(100, percentage * 100)));
                   setS(newS);
                   onUpdateColor({ h, s: newS, l });
@@ -641,9 +653,9 @@ export function ColorColumn({
                 onClick={(e) => e.stopPropagation()}
               >
                 <div 
-                  className="absolute bottom-0 left-0 right-0 transition-all duration-150"
+                  className="absolute left-0 top-0 bottom-0 transition-all duration-150"
                   style={{ 
-                    height: `${s}%`,
+                    width: `${s}%`,
                     backgroundColor: `${textColor}0d`
                   }}
                 />
@@ -651,21 +663,31 @@ export function ColorColumn({
             </div>
 
             {/* Lightness Slider */}
-            <div className="relative flex items-center gap-2">
+            <div className="relative flex flex-col items-center gap-1">
               <span className="text-xs font-medium" style={{ color: textColor }}>L</span>
               <div 
                 data-slider="l"
-                className="relative w-[51px] h-[120px] rounded-full border-2 cursor-pointer overflow-hidden"
+                className="relative w-[120px] h-[32px] rounded-full border-2 cursor-pointer overflow-hidden"
                 style={{ borderColor: `${textColor}e6` }}
                 onMouseDown={(e) => {
                   e.stopPropagation();
                   setIsDraggingSlider('l');
-                  handleSliderDrag(e, 'l', 100);
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const clickX = e.clientX - rect.left;
+                  const percentage = clickX / rect.width;
+                  const newL = Math.round(Math.max(0, Math.min(100, percentage * 100)));
+                  setL(newL);
+                  onUpdateColor({ h, s, l: newL });
                 }}
                 onMouseMove={(e) => {
                   if (e.buttons === 1) {
                     e.stopPropagation();
-                    handleSliderDrag(e, 'l', 100);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const percentage = clickX / rect.width;
+                    const newL = Math.round(Math.max(0, Math.min(100, percentage * 100)));
+                    setL(newL);
+                    onUpdateColor({ h, s, l: newL });
                   }
                 }}
                 onTouchStart={(e) => {
@@ -673,8 +695,8 @@ export function ColorColumn({
                   setIsDraggingSlider('l');
                   const touch = e.touches[0];
                   const rect = e.currentTarget.getBoundingClientRect();
-                  const clickY = touch.clientY - rect.top;
-                  const percentage = 1 - (clickY / rect.height);
+                  const clickX = touch.clientX - rect.left;
+                  const percentage = clickX / rect.width;
                   const newL = Math.round(Math.max(0, Math.min(100, percentage * 100)));
                   setL(newL);
                   onUpdateColor({ h, s, l: newL });
@@ -683,8 +705,8 @@ export function ColorColumn({
                   e.stopPropagation();
                   const touch = e.touches[0];
                   const rect = e.currentTarget.getBoundingClientRect();
-                  const clickY = touch.clientY - rect.top;
-                  const percentage = 1 - (clickY / rect.height);
+                  const clickX = touch.clientX - rect.left;
+                  const percentage = clickX / rect.width;
                   const newL = Math.round(Math.max(0, Math.min(100, percentage * 100)));
                   setL(newL);
                   onUpdateColor({ h, s, l: newL });
@@ -692,9 +714,9 @@ export function ColorColumn({
                 onClick={(e) => e.stopPropagation()}
               >
                 <div 
-                  className="absolute bottom-0 left-0 right-0 transition-all duration-150"
+                  className="absolute left-0 top-0 bottom-0 transition-all duration-150"
                   style={{ 
-                    height: `${l}%`,
+                    width: `${l}%`,
                     backgroundColor: `${textColor}0d`
                   }}
                 />

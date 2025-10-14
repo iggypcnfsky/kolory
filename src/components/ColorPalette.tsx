@@ -23,6 +23,7 @@ import { ColorColumn } from './ColorColumn';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { Plus, MoreVertical } from 'lucide-react';
+import { getContrastColor } from '@/lib/color-utils';
 
 interface ColorPaletteProps {
   colors: Color[];
@@ -35,6 +36,7 @@ interface ColorPaletteProps {
   canRemove: boolean;
   randomWidthMode: boolean;
   onShuffleWidths: () => void;
+  hexFont?: string;
 }
 
 function SortableColorColumn({
@@ -43,12 +45,14 @@ function SortableColorColumn({
   onUpdateColor,
   onDelete,
   canRemove,
+  hexFont,
 }: {
   color: Color;
   onToggleLock: () => void;
   onUpdateColor: (hsl: { h: number; s: number; l: number }) => void;
   onDelete?: () => void;
   canRemove: boolean;
+  hexFont?: string;
 }) {
   const [isHovered, setIsHovered] = React.useState(false);
   const {
@@ -65,6 +69,9 @@ function SortableColorColumn({
     transition,
   };
 
+  // Master color contrast switch - same as used in ColorColumn
+  const textColor = getContrastColor(color.hex);
+
   return (
     <div
       ref={setNodeRef}
@@ -79,6 +86,7 @@ function SortableColorColumn({
         onUpdateColor={onUpdateColor}
         onDelete={canRemove ? onDelete : undefined}
         isDragging={isDragging}
+        hexFont={hexFont}
       />
       {/* Desktop Drag Handle - Below Controls */}
       <div
@@ -94,7 +102,7 @@ function SortableColorColumn({
         <MoreVertical 
           className="h-7 w-7" 
           style={{ 
-            color: color.hsl.l > 50 ? '#000000' : '#ffffff',
+            color: textColor,
             strokeWidth: 2.5
           }}
         />
@@ -114,6 +122,7 @@ export function ColorPalette({
   canRemove,
   randomWidthMode,
   onShuffleWidths,
+  hexFont,
 }: ColorPaletteProps) {
   const [hoveredDivider, setHoveredDivider] = useState<number | null>(null);
   const [isResizing, setIsResizing] = useState(false);
@@ -342,15 +351,15 @@ export function ColorPalette({
           items={colors.map((c) => c.id)}
           strategy={horizontalListSortingStrategy}
         >
-          <div ref={containerRef} className="flex md:flex-row flex-col w-full h-full relative">
+          <div ref={containerRef} className="flex md:flex-row flex-col w-full h-full relative max-w-full overflow-hidden">
             {colors.map((color, index) => (
               <React.Fragment key={color.id}>
                 <div 
                   className="relative flex-1 color-column"
                   style={{
                     flexBasis: columnWidths.length > 0 ? `${columnWidths[index]}%` : undefined,
-                    minWidth: '5%',
-                    maxWidth: '95%'
+                    minWidth: 0,
+                    maxWidth: '100%'
                   }}
                 >
                   <SortableColorColumn
@@ -359,6 +368,7 @@ export function ColorPalette({
                     onUpdateColor={(hsl) => onUpdateColor(color.id, hsl)}
                     onDelete={() => onDeleteColor(color.id)}
                     canRemove={canRemove}
+                    hexFont={hexFont}
                   />
 
                   {/* Resize handles and add button overlays */}
@@ -419,11 +429,9 @@ export function ColorPalette({
                                   pendingInsertIndexRef.current = index + 1;
                                   onAddColor(index + 1);
                                 }}
-                                className={`h-12 w-12 rounded-full bg-black/60 backdrop-blur-md text-white hover:bg-black/80 transition-all duration-200 shadow-lg ${
-                                  hoveredDivider === index ? 'opacity-100 scale-100' : 'opacity-0 scale-0'
-                                }`}
+                                className="h-10 w-10 rounded-full bg-black/60 backdrop-blur-md text-white active:bg-black/80 transition-all duration-200 shadow-lg opacity-100 scale-100"
                               >
-                                <Plus className="h-5 w-5" />
+                                <Plus className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
