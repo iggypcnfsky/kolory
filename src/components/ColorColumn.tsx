@@ -18,7 +18,7 @@ interface ColorColumnProps {
   isDragging?: boolean;
   hexFont?: string;
 }
-//test
+
 export function ColorColumn({
   color,
   onToggleLock,
