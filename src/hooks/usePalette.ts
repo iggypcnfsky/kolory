@@ -59,7 +59,7 @@ export function usePalette(initialCount = 4) {
     }
   }, [savedPalettes]);
 
-  const addColor = useCallback(() => {
+  const addColor = useCallback((insertIndex?: number) => {
     if (colors.length >= MAX_COLORS) return;
 
     const newHsl = randomColor();
@@ -70,12 +70,23 @@ export function usePalette(initialCount = 4) {
       locked: false,
     };
 
-    setColors(prev => [...prev, newColor]);
+    setColors(prev => {
+      if (insertIndex !== undefined && insertIndex >= 0 && insertIndex <= prev.length) {
+        const newColors = [...prev];
+        newColors.splice(insertIndex, 0, newColor);
+        return newColors;
+      }
+      return [...prev, newColor];
+    });
   }, [colors.length]);
 
-  const removeColor = useCallback(() => {
+  const removeColor = useCallback((id?: string) => {
     if (colors.length <= MIN_COLORS) return;
-    setColors(prev => prev.slice(0, -1));
+    if (id) {
+      setColors(prev => prev.filter(c => c.id !== id));
+    } else {
+      setColors(prev => prev.slice(0, -1));
+    }
   }, [colors.length]);
 
   const shuffleColors = useCallback(() => {

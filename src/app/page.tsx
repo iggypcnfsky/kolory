@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Minus, Save, FolderOpen, Download, HelpCircle } from 'lucide-react';
+import { Save, FolderOpen, Download, HelpCircle, Shuffle, Palette, X, Percent } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { ColorPalette } from '@/components/ColorPalette';
@@ -22,6 +22,35 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { getNextHarmonyMode, getPreviousHarmonyMode, getHarmonyName } from '@/lib/color-harmonies';
+
+// Top bar button component - circular with icon only
+function TopBarButton({ 
+  icon, 
+  onClick, 
+  tooltip 
+}: { 
+  icon: React.ReactNode; 
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  tooltip: string;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClick}
+          className="w-12 h-12 rounded-full bg-black/60 backdrop-blur-md text-white hover:bg-black/80 transition-all duration-200 shadow-lg"
+        >
+          {icon}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{tooltip}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 export default function Home() {
   const {
@@ -48,6 +77,7 @@ export default function Home() {
   const [helpDialogOpen, setHelpDialogOpen] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [paletteName, setPaletteName] = useState('');
+  const [mobileHarmonyOpen, setMobileHarmonyOpen] = useState(false);
 
   // Helper to blur button after click
   const handleButtonClick = (callback: () => void) => (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -108,128 +138,115 @@ export default function Home() {
           onToggleLock={toggleLock}
           onUpdateColor={updateColor}
           onReorder={reorderColors}
+          onDeleteColor={removeColor}
+          onAddColor={addColor}
+          canAddMore={canAddMore}
+          canRemove={canRemove}
         />
 
-        {/* Bottom Right - Harmony Selector */}
-        <div className="fixed bottom-6 right-6 z-10">
-          <HarmonySelector currentMode={harmonyMode} onChange={changeHarmonyMode} />
-        </div>
-
-        {/* Bottom Center Controls */}
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-          <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-2 flex gap-2">
-            {/* Remove Color */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={handleButtonClick(removeColor)}
-                  disabled={!canRemove}
-                >
-                  <Minus className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Remove color</p>
-              </TooltipContent>
-            </Tooltip>
-
-            {/* Color Count */}
-            <div className="flex items-center px-3 text-sm font-medium">
-              {colors.length}
-            </div>
-
-            {/* Add Color */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={handleButtonClick(addColor)}
-                  disabled={!canAddMore}
-                >
-                  <Plus className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Add color</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <div className="w-px bg-border mx-1" />
+        {/* Top Center Controls - Desktop Only */}
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-10 hidden md:block">
+          <div className="flex items-center gap-3">
+            {/* Generate Button */}
+            <TopBarButton
+              icon={<Shuffle className="h-5 w-5" />}
+              onClick={handleButtonClick(shuffleColors)}
+              tooltip="Generate new colors (Space)"
+            />
 
             {/* Save Palette */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size="icon" variant="ghost" onClick={handleButtonClick(handleSavePalette)}>
-                  <Save className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Save palette (S)</p>
-              </TooltipContent>
-            </Tooltip>
+            <TopBarButton
+              icon={<Save className="h-5 w-5" />}
+              onClick={handleButtonClick(handleSavePalette)}
+              tooltip="Save palette (S)"
+            />
 
             {/* Open Saved Palettes */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={handleButtonClick(() => setSavedPalettesOpen(true))}
-                >
-                  <FolderOpen className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Saved palettes</p>
-              </TooltipContent>
-            </Tooltip>
+            <TopBarButton
+              icon={<FolderOpen className="h-5 w-5" />}
+              onClick={handleButtonClick(() => setSavedPalettesOpen(true))}
+              tooltip="Saved palettes"
+            />
 
             {/* Export */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={handleButtonClick(() => setExportDialogOpen(true))}
-                >
-                  <Download className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Export (E)</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <div className="w-px bg-border mx-1" />
+            <TopBarButton
+              icon={<Download className="h-5 w-5" />}
+              onClick={handleButtonClick(() => setExportDialogOpen(true))}
+              tooltip="Export (E)"
+            />
 
             {/* Help */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={handleButtonClick(() => setHelpDialogOpen(true))}
-                >
-                  <HelpCircle className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Help (?)</p>
-              </TooltipContent>
-            </Tooltip>
+            <TopBarButton
+              icon={<HelpCircle className="h-5 w-5" />}
+              onClick={handleButtonClick(() => setHelpDialogOpen(true))}
+              tooltip="Help (?)"
+            />
           </div>
         </div>
 
-        {/* Hint Text */}
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 text-center z-10">
-          <p className="text-sm text-white/80 bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full">
-            Press <kbd className="px-2 py-1 bg-white/20 rounded">Space</kbd> to generate
-            new colors
-          </p>
+        {/* Bottom Center - Harmony Selector - Desktop Only */}
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-10 hidden md:block">
+          <HarmonySelector currentMode={harmonyMode} onChange={changeHarmonyMode} />
         </div>
+
+        {/* Mobile Bottom Left - Generate Button */}
+        <div className="fixed bottom-4 left-4 z-20 md:hidden">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                onClick={handleButtonClick(shuffleColors)}
+                className="h-14 w-14 rounded-full bg-black/60 backdrop-blur-md text-white hover:bg-black/80 shadow-lg"
+              >
+                <Shuffle className="h-6 w-6" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Generate (Space)</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* Mobile Bottom Right - Harmony Toggle Button */}
+        <div className="fixed bottom-4 right-4 z-20 md:hidden">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                onClick={() => setMobileHarmonyOpen(!mobileHarmonyOpen)}
+                className="h-14 w-14 rounded-full bg-black/60 backdrop-blur-md text-white hover:bg-black/80 shadow-lg"
+              >
+                {mobileHarmonyOpen ? <X className="h-6 w-6" /> : <Palette className="h-6 w-6" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Harmony Mode</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
+        {/* Mobile Harmony Selector Panel */}
+        {mobileHarmonyOpen && (
+          <div className="fixed inset-0 z-30 md:hidden">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setMobileHarmonyOpen(false)}
+            />
+            
+            {/* Panel */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 animate-in slide-in-from-bottom">
+              <HarmonySelector 
+                currentMode={harmonyMode} 
+                onChange={(mode) => {
+                  changeHarmonyMode(mode);
+                  setMobileHarmonyOpen(false);
+                }} 
+              />
+            </div>
+          </div>
+        )}
+
 
         {/* Dialogs */}
         <ExportDialog
@@ -286,7 +303,16 @@ export default function Home() {
         </Dialog>
 
         {/* Toast Notifications */}
-        <Toaster />
+        <Toaster 
+          toastOptions={{
+            style: {
+              background: 'rgba(0, 0, 0, 0.6)',
+              backdropFilter: 'blur(12px)',
+              border: 'none',
+              color: 'white',
+            },
+          }}
+        />
       </main>
     </TooltipProvider>
   );

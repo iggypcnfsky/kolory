@@ -34,6 +34,7 @@ export function useKeyboard(actions: KeyboardActions) {
             document.activeElement.blur();
           }
           break;
+        case 'arrowright':
         case 'arrowdown':
           e.preventDefault();
           actions.onNextMode?.();
@@ -42,6 +43,7 @@ export function useKeyboard(actions: KeyboardActions) {
             document.activeElement.blur();
           }
           break;
+        case 'arrowleft':
         case 'arrowup':
           e.preventDefault();
           actions.onPreviousMode?.();

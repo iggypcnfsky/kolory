@@ -1,8 +1,10 @@
 'use client';
 
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { HarmonyMode, getAllHarmonyModes, getHarmonyName } from '@/lib/color-harmonies';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface HarmonySelectorProps {
   currentMode: HarmonyMode;
@@ -116,11 +118,14 @@ export function HarmonySelector({ currentMode, onChange }: HarmonySelectorProps)
   };
 
   return (
-    <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-2">
-      <div className="text-xs font-medium text-muted-foreground mb-2 px-2">
+    <div className="flex flex-col items-center gap-3">
+      {/* Mobile title */}
+      <div className="md:hidden text-xs font-medium text-white/60 mb-2 bg-black/60 backdrop-blur-md rounded-xl px-4 py-2 w-full text-center">
         Harmony Mode
       </div>
-      <div className="flex flex-col gap-1">
+      
+      {/* Harmony mode buttons - circular and horizontal */}
+      <div className="flex md:flex-row flex-col gap-3">
         {modes.map((mode) => {
           const { icon, description } = harmonyIcons[mode];
           const isActive = currentMode === mode;
@@ -129,32 +134,39 @@ export function HarmonySelector({ currentMode, onChange }: HarmonySelectorProps)
             <Tooltip key={mode}>
               <TooltipTrigger asChild>
                 <Button
-                  size="sm"
-                  variant={isActive ? 'default' : 'ghost'}
+                  size="icon"
+                  variant="ghost"
                   onClick={(e) => handleModeClick(mode, e)}
                   onKeyDown={(e) => {
-                    // Prevent spacebar from triggering the button
                     if (e.key === ' ') {
                       e.preventDefault();
                     }
                   }}
-                  className={`flex items-center justify-start gap-2 h-auto py-2 px-3 w-full ${
-                    isActive ? 'bg-primary text-primary-foreground' : ''
+                  className={`w-12 h-12 rounded-full transition-all duration-200 shadow-lg flex items-center justify-center ${
+                    isActive 
+                      ? 'bg-white text-black hover:bg-white' 
+                      : 'bg-black/60 backdrop-blur-md text-white hover:bg-black/80'
                   }`}
                 >
-                  <div className="w-5 h-5 flex-shrink-0">{icon}</div>
-                  <span className="text-xs leading-tight text-left flex-1">
-                    {getHarmonyName(mode)}
-                  </span>
+                  {icon}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="left" className="max-w-xs">
+              <TooltipContent side="top" className="max-w-xs">
                 <p className="font-semibold">{getHarmonyName(mode)}</p>
                 <p className="text-xs text-muted-foreground">{description}</p>
               </TooltipContent>
             </Tooltip>
           );
         })}
+      </div>
+      
+      {/* Use arrows hint - Desktop only, centered below buttons */}
+      <div className="hidden md:flex items-center gap-1.5 text-white/40 text-[10px]">
+        <span className="uppercase tracking-wide">use arrows</span>
+        <div className="flex items-center gap-0.5">
+          <ChevronLeft className="h-3 w-3" />
+          <ChevronRight className="h-3 w-3" />
+        </div>
       </div>
     </div>
   );

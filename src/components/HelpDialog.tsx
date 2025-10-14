@@ -16,8 +16,7 @@ interface HelpDialogProps {
 export function HelpDialog({ open, onOpenChange }: HelpDialogProps) {
   const shortcuts = [
     { key: 'Spacebar', description: 'Generate new color palette' },
-    { key: '↑ Arrow Up', description: 'Previous harmony mode' },
-    { key: '↓ Arrow Down', description: 'Next harmony mode' },
+    { key: '← / →', description: 'Previous / Next harmony mode' },
     { key: 'C', description: 'Copy all colors to clipboard' },
     { key: 'E', description: 'Open export dialog' },
     { key: 'S', description: 'Save current palette' },
