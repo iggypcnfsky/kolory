@@ -52,3 +52,4 @@ export function loadGoogleFont(fontName: string): void {
   document.head.appendChild(link);
 }
 
+
